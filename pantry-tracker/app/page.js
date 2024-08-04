@@ -18,7 +18,7 @@ const style = {
   p: 4,
   display: 'flex',
   flexDirection: 'column',
-  gap: 3,
+  gap: 3, 
 }
 
 
