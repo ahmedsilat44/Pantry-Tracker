@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
-import {Box, Stack, Typography, Button, Modal, TextField} from "@mui/material";
+import {Box, Stack, Typography, Button, Modal, TextField, Table, TableContainer, TableHead, TableBody, TableCell, TableRow, Paper, InputAdornment} from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
 import {getDocs, doc, query, collection, setDoc, deleteDoc, getDoc, get} from "firebase/firestore";
 
 const style = {
@@ -95,7 +96,8 @@ export default function Home() {
 
   return (
     <Box
-    width="100vw"
+    // width="100vw"
+    width={'100%'}
     height="100vh"
     display={'flex'}
     justifyContent={'center'}
@@ -135,27 +137,25 @@ export default function Home() {
         </Stack>
       </Box>
     </Modal>
-    <Button variant="contained" onClick={handleOpen}>
-      Add New Item
-    </Button>
-    <TextField id="outlined-basic" label="Search" variant="outlined" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value)
-    }
-       
-      }/>
-    <Box border={'1px solid #333'}>
-      <Box
-        width="800px"
-        height="100px"
-        bgcolor={'#ADD8E6'}
-        display={'flex'}
-        justifyContent={'center'}
-        alignItems={'center'}
-      >
-        <Typography variant={'h2'} color={'#333'} textAlign={'center'}>
-          Inventory Items
-        </Typography>
-      </Box>
-      <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
+    <Stack direction="row" spacing={2}>
+      <Button variant="contained" onClick={handleOpen}>
+        Add New Item
+      </Button>
+      <TextField sx={{width: 500,}} id="outlined-basic" label="Search" variant="outlined" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value)
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        ),
+      }}/>
+    </Stack>
+    
+      
+    <Box component={Paper} border={'1px solid #333'} elevation={3}  width={9/10} height={1/2} sx={{background: '#fff'}}>
+      
+      {/* <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
         {filteredInventory.map(({name, quantity,calories,serving_size}) => (
           <Box
             key={name}
@@ -184,7 +184,39 @@ export default function Home() {
             </Button>
           </Box>
         ))}
-      </Stack>
+      </Stack> */}
+      <TableContainer border={'1px solid #333'} component={Paper} >
+      <Table  aria-label="simple table">
+      
+        <TableHead>
+          <TableRow>
+            <TableCell align="center">Name</TableCell>
+            <TableCell align="center">Quantity</TableCell>
+            <TableCell align="center">Calories</TableCell>
+            <TableCell align="center">Serving Size&nbsp;(g)</TableCell>
+            <TableCell align="center"></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody height={1} >
+          {filteredInventory.map(({name, quantity,calories,serving_size}) => (
+            <TableRow
+              key={name}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell align="center" component="th" scope="row">
+                {name}
+              </TableCell>
+              <TableCell align="center">{quantity}</TableCell>
+              <TableCell align="center">{calories}</TableCell>
+              <TableCell align="center">{serving_size}</TableCell>
+              <TableCell align="center"><Button variant="contained" onClick={() => removeItem(name)}>
+              Remove
+            </Button></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
     </Box>
   </Box>
   );
