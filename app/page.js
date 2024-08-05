@@ -79,20 +79,23 @@ export default function Home() {
     updateInventory()
   }, [])
 
-  const editItem = async (item,data) => {
-    const docRef = doc(collection(firestore, 'pantry',"default_pantry", 'pantryItems'), item)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-      const { quantity } = docSnap.data()
-      await setDoc(docRef, { quantity: quantity + 1 })
-    }
-    await updateInventory()
-  }
 
 
   const addItem = async (item) => {
     const docRef = doc(collection(firestore, 'pantry',"default_pantry", 'pantryItems'), item)
-    
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      var quantity = docSnap.data().quantity + 1
+      const docData = {
+        "name": item,
+        "calories": docSnap.data().calories,
+        "serving_size": docSnap.data().serving_size,
+        "quantity": quantity
+      }
+      await setDoc(docRef, docData)
+      updateInventory()
+      return
+    }
     const caloreData = await fetch('https://api.calorieninjas.com/v1/nutrition?query=' + item,{
       headers: {
         'X-Api-Key': process.env.NEXT_PUBLIC_CALORIE_API_KEY
@@ -117,12 +120,7 @@ export default function Home() {
     const docRef = doc(collection(firestore, 'pantry',"default_pantry", 'pantryItems'), item)
     const docSnap = await getDoc(docRef)
     if (docSnap.exists()) {
-      const { quantity } = docSnap.data()
-      if (quantity === 1) {
-        await deleteDoc(docRef)
-      } else {
-        await setDoc(docRef, { quantity: quantity - 1 })
-      }
+      await deleteDoc(docRef)
     }
     await updateInventory()
   }
@@ -217,7 +215,7 @@ export default function Home() {
             <Button variant="contained" onClick={handleOpen}>
               Add New Item
             </Button>
-            <TextField sx={{width: "500px"}} id="outlined-basic" label="Search" variant="outlined" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value)
+            <TextField sx={{width: "500px"}} id="outlined-basic" label="Search" variant="outlined" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value.toLowerCase())
             }}
             InputProps={{
               startAdornment: (
@@ -251,11 +249,14 @@ export default function Home() {
                       <TableCell align="center">{quantity}</TableCell>
                       <TableCell align="center">{calories}</TableCell>
                       <TableCell align="center">{serving_size}</TableCell>
-                      <TableCell align="center"><IconButton variant="contained" onClick={handleMenuClick} >
+                      <TableCell align="center"><IconButton variant="contained" id={name} onClick={handleMenuClick} >
                       <MoreHorizIcon/>
                     </IconButton>
                     <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
-                      <MenuItem onClick={removeItem} >Remove</MenuItem>
+                      <MenuItem onClick={() => {
+                        handleCloseMenu()
+                        removeItem(anchorEl.parentElement.id)
+                      }} >Remove</MenuItem>
                       {/* <MenuItem >Edit</MenuItem> */}
                     </Menu>
                     </TableCell>
